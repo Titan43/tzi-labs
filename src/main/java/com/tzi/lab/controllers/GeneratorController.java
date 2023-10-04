@@ -21,4 +21,12 @@ public class GeneratorController {
                 inputTemplate.getA(), inputTemplate.getM(), inputTemplate.getC(), inputTemplate.getInitialValue(),
                 size);
     }
+
+    @PostMapping(path = "/pseudorandom/period")
+    public ResponseEntity<?> findPseudorandomPeriod(
+            @RequestBody GeneratorInputTemplate inputTemplate
+    ){
+        return generatorService.findPeriod(
+                inputTemplate.getA(), inputTemplate.getM(), inputTemplate.getC(), inputTemplate.getInitialValue());
+    }
 }

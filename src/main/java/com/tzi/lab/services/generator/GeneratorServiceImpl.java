@@ -18,18 +18,33 @@ public class GeneratorServiceImpl implements GeneratorService {
     @Autowired
     private final Validator validator;
     @Override
-    public ResponseEntity<?> generateSequence(String a, String b, String c, String seed, String size) {
+    public ResponseEntity<?> generateSequence(String a, String m, String c, String initialValue, String size) {
 
         if(validator.isValidInt(a)
-                && validator.isValidInt(b)
+                && validator.isValidInt(m)
                 && validator.isValidInt(c)
-                && validator.isValidInt(seed)
+                && validator.isValidInt(initialValue)
                 && validator.isValidInt(size))
             return new ResponseEntity<>(pseudoRandom.generateRandomSequence(Integer.valueOf(a),
-                    Integer.valueOf(b),
+                    Integer.valueOf(m),
                     Integer.valueOf(c),
-                    Integer.valueOf(seed),
+                    Integer.valueOf(initialValue),
                     Integer.valueOf(size)), HttpStatus.OK);
+        return new ResponseEntity<>("Incorrect values passed", HttpStatus.BAD_REQUEST);
+    }
+
+    @Override
+    public ResponseEntity<String> findPeriod(String a, String m, String c, String initialValue) {
+        if(validator.isValidInt(a)
+                && validator.isValidInt(m)
+                && validator.isValidInt(c)
+                && validator.isValidInt(initialValue))
+            return new ResponseEntity<>("Period: "+pseudoRandom.getPeriod(
+                    Integer.valueOf(a),
+                    Integer.valueOf(m),
+                    Integer.valueOf(c),
+                    Integer.valueOf(initialValue)), HttpStatus.OK
+            );
         return new ResponseEntity<>("Incorrect values passed", HttpStatus.BAD_REQUEST);
     }
 }
