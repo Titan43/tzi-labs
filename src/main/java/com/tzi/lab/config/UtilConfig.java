@@ -3,6 +3,7 @@ package com.tzi.lab.config;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.tzi_lib.MD5Hash;
 import org.tzi_lib.PseudoRandom;
 
 @Configuration
@@ -11,5 +12,10 @@ public class UtilConfig {
     @Bean
     public PseudoRandom pseudoRandom(){
         return new PseudoRandom();
+    }
+
+    @Bean
+    public MD5Hash customMD5Hash(){
+        return new MD5Hash();
     }
 }
