@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class HashInputTemplate {
+public class EncryptionTemplate {
     private String message;
+    private String key;
 }
