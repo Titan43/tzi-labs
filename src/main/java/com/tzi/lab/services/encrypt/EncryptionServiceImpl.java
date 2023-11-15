@@ -1,5 +1,6 @@
 package com.tzi.lab.services.encrypt;
 
+import com.tzi.lab.entities.DecryptionTemplate;
 import com.tzi.lab.entities.EncryptionTemplate;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,7 +8,10 @@ import org.springframework.stereotype.Service;
 import org.tzi_lib.*;
 
 import java.security.KeyPair;
+import java.util.Arrays;
+
 import static org.tzi_lib.ByteConverter.bytesToHex;
+import static org.tzi_lib.ByteConverter.hexStringToBytes;
 
 @Service
 @AllArgsConstructor
@@ -29,22 +33,20 @@ public class EncryptionServiceImpl implements EncryptionService{
         KeyPair keyPair = rsa.generateKeyPair();
         byte[] publicKey = keyPair.getPublic().getEncoded();
         byte[] privateKey = keyPair.getPrivate().getEncoded();
-        return "PublicKey: " +
-                bytesToHex(publicKey) +
+        return bytesToHex(publicKey) +
                 "\n" +
-                "PrivateKey: " +
                 bytesToHex(privateKey);
     }
 
     @Override
     public String encryptRC5(EncryptionTemplate encryptionTemplate) {
-        byte[] iv = rc5CBCPad.intToByteArray(pseudoRandom.generateRandomInt(16807,
+        int iv = pseudoRandom.generateRandomInt(16807,
                 2147483447,
                 0,
-                (int)(System.currentTimeMillis()%Integer.MAX_VALUE)));
+                (int)(System.currentTimeMillis()%Integer.MAX_VALUE));
         byte[] key = bytesToHex(md5Hash.computeMD5(encryptionTemplate.getKey().getBytes())).getBytes();
         byte[] input = encryptionTemplate.getMessage().getBytes();
-        return rc5CBCPad.encryptBlocks(input, key, iv);
+        return iv+"\n"+rc5CBCPad.encryptBlocks(input, key, rc5CBCPad.intToByteArray(iv));
     }
 
     @Override
@@ -53,18 +55,20 @@ public class EncryptionServiceImpl implements EncryptionService{
     }
 
     @Override
-    public String decryptRC5(EncryptionTemplate encryptionTemplate) {
-        return null;
+    public String decryptRC5(DecryptionTemplate decryptionTemplate) {
+        byte[] key = bytesToHex(md5Hash.computeMD5(decryptionTemplate.getKey().getBytes())).getBytes();
+        byte[] iv = rc5CBCPad.intToByteArray(Integer.parseInt(decryptionTemplate.getIv()));
+        return rc5CBCPad.decryptBlocks(hexStringToBytes(decryptionTemplate.getMessage()), key, iv);
     }
 
     @Override
     public String encryptFileRC5(byte[] file, String key) {
-        byte[] iv = rc5CBCPad.intToByteArray(pseudoRandom.generateRandomInt(16807,
+        int iv = pseudoRandom.generateRandomInt(16807,
                 2147483447,
                 0,
-                (int)(System.currentTimeMillis()%Integer.MAX_VALUE)));
+                (int)(System.currentTimeMillis()%Integer.MAX_VALUE));
         byte[] keyBytes = bytesToHex(md5Hash.computeMD5(key.getBytes())).getBytes();
-        return rc5CBCPad.encryptBlocks(file, keyBytes, iv);
+        return  iv+"\n"+rc5CBCPad.encryptBlocks(file, keyBytes, rc5CBCPad.intToByteArray(iv));
     }
 
     @Override
@@ -73,7 +77,7 @@ public class EncryptionServiceImpl implements EncryptionService{
     }
 
     @Override
-    public String decryptFileRC5(byte[] file, String key) {
+    public String decryptFileRC5(byte[] file, String key, int iv) {
         return null;
     }
 }

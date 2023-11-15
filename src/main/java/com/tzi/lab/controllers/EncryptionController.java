@@ -1,5 +1,6 @@
 package com.tzi.lab.controllers;
 
+import com.tzi.lab.entities.DecryptionTemplate;
 import com.tzi.lab.entities.EncryptionTemplate;
 import com.tzi.lab.services.encrypt.EncryptionService;
 import lombok.AllArgsConstructor;
@@ -44,6 +45,29 @@ public class EncryptionController {
         return new ResponseEntity<>(encryptedText, HttpStatus.OK);
     }
 
+    @PostMapping(path = "/decrypt/{type}")
+    public ResponseEntity<?> decrypt(@PathVariable String type, @RequestBody DecryptionTemplate decryptionTemplate){
+        if(decryptionTemplate.getKey() == null || decryptionTemplate.getMessage() == null){
+            return new ResponseEntity<>("Message and key values cannot be null", HttpStatus.BAD_REQUEST);
+        }
+        String encryptedText;
+        if(type.equals("rc5")){
+            try {
+                Integer.parseInt(decryptionTemplate.getIv());
+                encryptedText = encryptionService.decryptRC5(decryptionTemplate);
+            }
+            catch (NumberFormatException e){
+                return new ResponseEntity<>("Invalid starting vector passed", HttpStatus.BAD_REQUEST);
+            }
+        }
+        else if(type.equals("rsa")){
+            throw new IllegalArgumentException("RSA currently unsupported");
+        }
+        else return new ResponseEntity<>("Type should be RC5 or RSA", HttpStatus.BAD_REQUEST);
+
+        return new ResponseEntity<>(encryptedText, HttpStatus.OK);
+    }
+
     @PostMapping(path = "/file-encrypt/{type}",
             consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<String> encryptFile(@PathVariable String type,
@@ -63,6 +87,36 @@ public class EncryptionController {
         }
         else if(type.equals("rsa")){
             encryptedText = encryptionService.encryptFileRSA(data, encryptionTemplate.getKey());
+        }
+        else return new ResponseEntity<>("Type should be RC5 or RSA", HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(encryptedText, HttpStatus.OK);
+    }
+
+    @PostMapping(path = "/file-decrypt/{type}",
+            consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
+    public ResponseEntity<String> decryptFile(@PathVariable String type,
+                                              @RequestPart("file") MultipartFile file,
+                                              @RequestPart("key") DecryptionTemplate decryptionTemplate){
+        byte[] data;
+        String encryptedText;
+        if(decryptionTemplate.getKey() == null)
+            return new ResponseEntity<>("Key has to be provided", HttpStatus.BAD_REQUEST);
+        try{
+            data = file.getBytes();
+        } catch (IOException e) {
+            return new ResponseEntity<>("Invalid file passed", HttpStatus.BAD_REQUEST);
+        }
+        if(type.equals("rc5")){
+            try{
+                int iv = Integer.parseInt(decryptionTemplate.getIv());
+                encryptedText = encryptionService.decryptFileRC5(data, decryptionTemplate.getKey(), iv);
+            }
+            catch (NumberFormatException e){
+                return new ResponseEntity<>("Invalid starting vector passed", HttpStatus.BAD_REQUEST);
+            }
+        }
+        else if(type.equals("rsa")){
+            throw new IllegalArgumentException("RSA currently unsupported");
         }
         else return new ResponseEntity<>("Type should be RC5 or RSA", HttpStatus.BAD_REQUEST);
         return new ResponseEntity<>(encryptedText, HttpStatus.OK);
