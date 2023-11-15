@@ -6,6 +6,8 @@ public interface EncryptionService {
     String generateKeys() throws Exception;
     String encryptRC5(EncryptionTemplate encryptionTemplate);
     String encryptRSA(EncryptionTemplate encryptionTemplate);
-    byte[] encryptFileRC5(byte[] file);
-    byte[] encryptFileRSA(byte[] file);
+    String decryptRC5(EncryptionTemplate encryptionTemplate);
+    String encryptFileRC5(byte[] file, String key);
+    String encryptFileRSA(byte[] file, String key);
+    String decryptFileRC5(byte[] file, String key);
 }

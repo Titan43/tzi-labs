@@ -53,12 +53,27 @@ public class EncryptionServiceImpl implements EncryptionService{
     }
 
     @Override
-    public byte[] encryptFileRC5(byte[] file) {
-        return new byte[0];
+    public String decryptRC5(EncryptionTemplate encryptionTemplate) {
+        return null;
     }
 
     @Override
-    public byte[] encryptFileRSA(byte[] file) {
-        return new byte[0];
+    public String encryptFileRC5(byte[] file, String key) {
+        byte[] iv = rc5CBCPad.intToByteArray(pseudoRandom.generateRandomInt(16807,
+                2147483447,
+                0,
+                (int)(System.currentTimeMillis()%Integer.MAX_VALUE)));
+        byte[] keyBytes = bytesToHex(md5Hash.computeMD5(key.getBytes())).getBytes();
+        return rc5CBCPad.encryptBlocks(file, keyBytes, iv);
+    }
+
+    @Override
+    public String encryptFileRSA(byte[] file, String key) {
+        return null;
+    }
+
+    @Override
+    public String decryptFileRC5(byte[] file, String key) {
+        return null;
     }
 }

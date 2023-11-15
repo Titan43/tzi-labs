@@ -10,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+
 @RestController
 @AllArgsConstructor
 @RequestMapping(path = "/encryption")
@@ -27,6 +29,9 @@ public class EncryptionController {
     }
     @PostMapping(path = "/encrypt/{type}")
     public ResponseEntity<?> encrypt(@PathVariable String type, @RequestBody EncryptionTemplate encryptionTemplate){
+        if(encryptionTemplate.getKey() == null || encryptionTemplate.getMessage() == null){
+            return new ResponseEntity<>("Message and key values cannot be null", HttpStatus.BAD_REQUEST);
+        }
         String encryptedText;
         if(type.equals("rc5")){
             encryptedText = encryptionService.encryptRC5(encryptionTemplate);
@@ -39,9 +44,27 @@ public class EncryptionController {
         return new ResponseEntity<>(encryptedText, HttpStatus.OK);
     }
 
-    @PostMapping(path = "/file-encrypt/{type}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
-            produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-    public ResponseEntity<byte[]> encryptFile(@PathVariable String type, @RequestParam("file") MultipartFile file){
-        return null;
+    @PostMapping(path = "/file-encrypt/{type}",
+            consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
+    public ResponseEntity<String> encryptFile(@PathVariable String type,
+                                              @RequestPart("file") MultipartFile file,
+                                              @RequestPart("key") EncryptionTemplate encryptionTemplate){
+        byte[] data;
+        String encryptedText;
+        if(encryptionTemplate.getKey() == null)
+            return new ResponseEntity<>("Key has to be provided", HttpStatus.BAD_REQUEST);
+        try{
+            data = file.getBytes();
+        } catch (IOException e) {
+            return new ResponseEntity<>("Invalid file passed", HttpStatus.BAD_REQUEST);
+        }
+        if(type.equals("rc5")){
+            encryptedText = encryptionService.encryptFileRC5(data, encryptionTemplate.getKey());
+        }
+        else if(type.equals("rsa")){
+            encryptedText = encryptionService.encryptFileRSA(data, encryptionTemplate.getKey());
+        }
+        else return new ResponseEntity<>("Type should be RC5 or RSA", HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(encryptedText, HttpStatus.OK);
     }
 }
