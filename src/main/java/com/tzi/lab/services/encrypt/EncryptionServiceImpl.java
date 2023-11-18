@@ -1,6 +1,5 @@
 package com.tzi.lab.services.encrypt;
 
-import com.tzi.lab.entities.DecryptionTemplate;
 import com.tzi.lab.entities.EncryptionTemplate;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,7 +7,6 @@ import org.springframework.stereotype.Service;
 import org.tzi_lib.*;
 
 import java.security.KeyPair;
-import java.util.Arrays;
 
 import static org.tzi_lib.ByteConverter.bytesToHex;
 import static org.tzi_lib.ByteConverter.hexStringToBytes;
@@ -39,13 +37,9 @@ public class EncryptionServiceImpl implements EncryptionService{
     }
 
     @Override
-    public String encryptRC5(byte[] input, String key) {
-        int iv = pseudoRandom.generateRandomInt(16807,
-                2147483447,
-                0,
-                (int)(System.currentTimeMillis()%Integer.MAX_VALUE));
+    public String encryptRC5(byte[] input, int iv, String key) {
         byte[] keyBytes = bytesToHex(md5Hash.computeMD5(key.getBytes())).getBytes();
-        return iv+"\n"+rc5CBCPad.encryptBlocks(input, keyBytes, rc5CBCPad.intToByteArray(iv));
+        return rc5CBCPad.encryptBlocks(input, keyBytes, rc5CBCPad.intToByteArray(iv));
     }
 
     @Override

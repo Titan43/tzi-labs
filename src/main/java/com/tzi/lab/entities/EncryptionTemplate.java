@@ -10,4 +10,5 @@ import lombok.NoArgsConstructor;
 public class EncryptionTemplate {
     private String message;
     private String key;
+    private String iv;
 }

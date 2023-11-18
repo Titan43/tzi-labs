@@ -1,11 +1,10 @@
 package com.tzi.lab.services.encrypt;
 
-import com.tzi.lab.entities.DecryptionTemplate;
 import com.tzi.lab.entities.EncryptionTemplate;
 
 public interface EncryptionService {
     String generateKeys() throws Exception;
-    String encryptRC5(byte[] input, String key);
+    String encryptRC5(byte[] input, int iv, String key);
     String encryptRSA(EncryptionTemplate encryptionTemplate);
     String decryptRC5(byte[] input, String key, int iv);
 }
