@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.tzi_lib.MD5Hash;
+import static org.tzi_lib.ByteConverter.bytesToHex;
 
 import java.io.IOException;
 
@@ -25,7 +26,7 @@ public class HashServiceImpl implements HashService{
         }
 
         return new ResponseEntity<>(
-                customMD5Hash.toHexString(customMD5Hash.computeMD5(message.getBytes())),
+                bytesToHex(customMD5Hash.computeMD5(message.getBytes())),
                 HttpStatus.OK
         );
     }
@@ -44,7 +45,7 @@ public class HashServiceImpl implements HashService{
         }
 
         return new ResponseEntity<>(
-                customMD5Hash.toHexString(customMD5Hash.computeMD5(bytes)),
+                bytesToHex(customMD5Hash.computeMD5(bytes)),
                 HttpStatus.OK
         );
     }
