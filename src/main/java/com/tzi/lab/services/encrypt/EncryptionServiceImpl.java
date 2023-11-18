@@ -1,6 +1,6 @@
 package com.tzi.lab.services.encrypt;
 
-import com.tzi.lab.entities.EncryptionTemplate;
+import com.tzi.lab.entities.KeyGenOut;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,9 +16,6 @@ import static org.tzi_lib.ByteConverter.hexStringToBytes;
 public class EncryptionServiceImpl implements EncryptionService{
 
     @Autowired
-    private final PseudoRandom pseudoRandom;
-
-    @Autowired
     private final MD5Hash md5Hash;
 
     @Autowired
@@ -27,13 +24,12 @@ public class EncryptionServiceImpl implements EncryptionService{
     @Autowired
     private final RSA rsa;
     @Override
-    public String generateKeys() throws Exception {
+    public KeyGenOut generateKeys() throws Exception {
         KeyPair keyPair = rsa.generateKeyPair();
         byte[] publicKey = keyPair.getPublic().getEncoded();
         byte[] privateKey = keyPair.getPrivate().getEncoded();
-        return bytesToHex(publicKey) +
-                "\n" +
-                bytesToHex(privateKey);
+        return new KeyGenOut(bytesToHex(publicKey),
+                bytesToHex(privateKey));
     }
 
     @Override
@@ -57,7 +53,9 @@ public class EncryptionServiceImpl implements EncryptionService{
     }
 
     @Override
-    public String decryptRSA(byte[] input, String privateKeyHex) {
-        return null;
+    public String decryptRSA(byte[] input, String privateKeyHex) throws Exception {
+        byte[] inputBytes = hexStringToBytes(new String(input));
+        byte[] keyBytes = hexStringToBytes(privateKeyHex);
+        return rsa.decryptBlocks(inputBytes, keyBytes);
     }
 }

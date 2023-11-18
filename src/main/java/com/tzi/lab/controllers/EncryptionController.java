@@ -19,8 +19,8 @@ public class EncryptionController {
     @Autowired
     private final EncryptionService encryptionService;
 
-    @GetMapping(path = "/generate-keys")
-    public ResponseEntity<String> generateKeys(){
+    @GetMapping(path = "/generate-keys", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> generateKeys(){
         try{
             return new ResponseEntity<>(encryptionService.generateKeys(), HttpStatus.OK);
         } catch (Exception e) {
@@ -50,7 +50,7 @@ public class EncryptionController {
                         encryptionTemplate.getKey());
             }
             catch (Exception e){
-                return new ResponseEntity<>("Operation cannot be used right now", HttpStatus.INTERNAL_SERVER_ERROR);
+                return new ResponseEntity<>("Invalid key passed", HttpStatus.BAD_REQUEST);
             }
         }
         else return new ResponseEntity<>("Type should be RC5 or RSA", HttpStatus.BAD_REQUEST);
@@ -63,11 +63,11 @@ public class EncryptionController {
         if(decryptionTemplate.getKey() == null || decryptionTemplate.getMessage() == null){
             return new ResponseEntity<>("Message and key values cannot be null", HttpStatus.BAD_REQUEST);
         }
-        String encryptedText;
+        String decryptedText;
         if(type.equals("rc5")){
             try {
                 int iv = Integer.parseInt(decryptionTemplate.getIv());
-                encryptedText = encryptionService.decryptRC5(decryptionTemplate.getMessage().getBytes(),
+                decryptedText = encryptionService.decryptRC5(decryptionTemplate.getMessage().getBytes(),
                         decryptionTemplate.getKey(),
                         iv);
             }
@@ -76,11 +76,17 @@ public class EncryptionController {
             }
         }
         else if(type.equals("rsa")){
-            throw new IllegalArgumentException("RSA currently unsupported");
+            try {
+                decryptedText = encryptionService.decryptRSA(decryptionTemplate.getMessage().getBytes(),
+                        decryptionTemplate.getKey());
+            }
+            catch (Exception e){
+                return new ResponseEntity<>("Invalid key passed", HttpStatus.BAD_REQUEST);
+            }
         }
         else return new ResponseEntity<>("Type should be RC5 or RSA", HttpStatus.BAD_REQUEST);
 
-        return new ResponseEntity<>(encryptedText, HttpStatus.OK);
+        return new ResponseEntity<>(decryptedText, HttpStatus.OK);
     }
 
     @PostMapping(path = "/file-encrypt/{type}",
@@ -112,7 +118,7 @@ public class EncryptionController {
                         encryptionTemplate.getKey());
             }
             catch (Exception e){
-                return new ResponseEntity<>("Operation cannot be used right now", HttpStatus.INTERNAL_SERVER_ERROR);
+                return new ResponseEntity<>("Invalid key passed", HttpStatus.BAD_REQUEST);
             }
         }
         else return new ResponseEntity<>("Type should be RC5 or RSA", HttpStatus.BAD_REQUEST);
@@ -143,7 +149,12 @@ public class EncryptionController {
             }
         }
         else if(type.equals("rsa")){
-            throw new IllegalArgumentException("RSA currently unsupported");
+            try{
+                decryptedText = encryptionService.decryptRSA(data, decryptionTemplate.getKey());
+            }
+            catch (Exception e){
+                return new ResponseEntity<>("Invalid key passed", HttpStatus.BAD_REQUEST);
+            }
         }
         else return new ResponseEntity<>("Type should be RC5 or RSA", HttpStatus.BAD_REQUEST);
         return new ResponseEntity<>(decryptedText, HttpStatus.OK);
