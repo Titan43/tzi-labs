@@ -35,7 +35,8 @@ public class EncryptionController {
         }
         String encryptedText;
         if(type.equals("rc5")){
-            encryptedText = encryptionService.encryptRC5(encryptionTemplate);
+            encryptedText = encryptionService.encryptRC5(encryptionTemplate.getMessage().getBytes(),
+                    encryptionTemplate.getKey());
         }
         else if(type.equals("rsa")){
             encryptedText = encryptionService.encryptRSA(encryptionTemplate);
@@ -53,8 +54,10 @@ public class EncryptionController {
         String encryptedText;
         if(type.equals("rc5")){
             try {
-                Integer.parseInt(decryptionTemplate.getIv());
-                encryptedText = encryptionService.decryptRC5(decryptionTemplate);
+                int iv = Integer.parseInt(decryptionTemplate.getIv());
+                encryptedText = encryptionService.decryptRC5(decryptionTemplate.getMessage().getBytes(),
+                        decryptionTemplate.getKey(),
+                        iv);
             }
             catch (NumberFormatException e){
                 return new ResponseEntity<>("Invalid starting vector passed", HttpStatus.BAD_REQUEST);
@@ -83,10 +86,10 @@ public class EncryptionController {
             return new ResponseEntity<>("Invalid file passed", HttpStatus.BAD_REQUEST);
         }
         if(type.equals("rc5")){
-            encryptedText = encryptionService.encryptFileRC5(data, encryptionTemplate.getKey());
+            encryptedText = encryptionService.encryptRC5(data, encryptionTemplate.getKey());
         }
         else if(type.equals("rsa")){
-            encryptedText = encryptionService.encryptFileRSA(data, encryptionTemplate.getKey());
+            throw new IllegalArgumentException("RSA currently unsupported");
         }
         else return new ResponseEntity<>("Type should be RC5 or RSA", HttpStatus.BAD_REQUEST);
         return new ResponseEntity<>(encryptedText, HttpStatus.OK);
@@ -98,7 +101,7 @@ public class EncryptionController {
                                               @RequestPart("file") MultipartFile file,
                                               @RequestPart("key") DecryptionTemplate decryptionTemplate){
         byte[] data;
-        String encryptedText;
+        String decryptedText;
         if(decryptionTemplate.getKey() == null)
             return new ResponseEntity<>("Key has to be provided", HttpStatus.BAD_REQUEST);
         try{
@@ -109,7 +112,7 @@ public class EncryptionController {
         if(type.equals("rc5")){
             try{
                 int iv = Integer.parseInt(decryptionTemplate.getIv());
-                encryptedText = encryptionService.decryptFileRC5(data, decryptionTemplate.getKey(), iv);
+                decryptedText = encryptionService.decryptRC5(data, decryptionTemplate.getKey(), iv);
             }
             catch (NumberFormatException e){
                 return new ResponseEntity<>("Invalid starting vector passed", HttpStatus.BAD_REQUEST);
@@ -119,6 +122,6 @@ public class EncryptionController {
             throw new IllegalArgumentException("RSA currently unsupported");
         }
         else return new ResponseEntity<>("Type should be RC5 or RSA", HttpStatus.BAD_REQUEST);
-        return new ResponseEntity<>(encryptedText, HttpStatus.OK);
+        return new ResponseEntity<>(decryptedText, HttpStatus.OK);
     }
 }

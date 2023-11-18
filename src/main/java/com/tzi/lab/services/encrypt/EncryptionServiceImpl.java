@@ -39,14 +39,13 @@ public class EncryptionServiceImpl implements EncryptionService{
     }
 
     @Override
-    public String encryptRC5(EncryptionTemplate encryptionTemplate) {
+    public String encryptRC5(byte[] input, String key) {
         int iv = pseudoRandom.generateRandomInt(16807,
                 2147483447,
                 0,
                 (int)(System.currentTimeMillis()%Integer.MAX_VALUE));
-        byte[] key = bytesToHex(md5Hash.computeMD5(encryptionTemplate.getKey().getBytes())).getBytes();
-        byte[] input = encryptionTemplate.getMessage().getBytes();
-        return iv+"\n"+rc5CBCPad.encryptBlocks(input, key, rc5CBCPad.intToByteArray(iv));
+        byte[] keyBytes = bytesToHex(md5Hash.computeMD5(key.getBytes())).getBytes();
+        return iv+"\n"+rc5CBCPad.encryptBlocks(input, keyBytes, rc5CBCPad.intToByteArray(iv));
     }
 
     @Override
@@ -55,29 +54,10 @@ public class EncryptionServiceImpl implements EncryptionService{
     }
 
     @Override
-    public String decryptRC5(DecryptionTemplate decryptionTemplate) {
-        byte[] key = bytesToHex(md5Hash.computeMD5(decryptionTemplate.getKey().getBytes())).getBytes();
-        byte[] iv = rc5CBCPad.intToByteArray(Integer.parseInt(decryptionTemplate.getIv()));
-        return rc5CBCPad.decryptBlocks(hexStringToBytes(decryptionTemplate.getMessage()), key, iv);
-    }
-
-    @Override
-    public String encryptFileRC5(byte[] file, String key) {
-        int iv = pseudoRandom.generateRandomInt(16807,
-                2147483447,
-                0,
-                (int)(System.currentTimeMillis()%Integer.MAX_VALUE));
+    public String decryptRC5(byte[] input, String key, int iv) {
+        byte[] inputBytes = hexStringToBytes(new String(input));
         byte[] keyBytes = bytesToHex(md5Hash.computeMD5(key.getBytes())).getBytes();
-        return  iv+"\n"+rc5CBCPad.encryptBlocks(file, keyBytes, rc5CBCPad.intToByteArray(iv));
-    }
-
-    @Override
-    public String encryptFileRSA(byte[] file, String key) {
-        return null;
-    }
-
-    @Override
-    public String decryptFileRC5(byte[] file, String key, int iv) {
-        return null;
+        byte[] ivBytes = rc5CBCPad.intToByteArray(iv);
+        return rc5CBCPad.decryptBlocks(inputBytes, keyBytes, ivBytes);
     }
 }
