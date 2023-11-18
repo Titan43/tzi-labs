@@ -20,7 +20,7 @@ public class EncryptionController {
     private final EncryptionService encryptionService;
 
     @GetMapping(path = "/generate-keys")
-    public ResponseEntity<?> generateKeys(){
+    public ResponseEntity<String> generateKeys(){
         try{
             return new ResponseEntity<>(encryptionService.generateKeys(), HttpStatus.OK);
         } catch (Exception e) {
@@ -28,7 +28,7 @@ public class EncryptionController {
         }
     }
     @PostMapping(path = "/encrypt/{type}")
-    public ResponseEntity<?> encrypt(@PathVariable String type, @RequestBody EncryptionTemplate encryptionTemplate){
+    public ResponseEntity<String> encrypt(@PathVariable String type, @RequestBody EncryptionTemplate encryptionTemplate){
         if(encryptionTemplate.getKey() == null || encryptionTemplate.getMessage() == null){
             return new ResponseEntity<>("Message and key values cannot be null", HttpStatus.BAD_REQUEST);
         }
@@ -45,7 +45,13 @@ public class EncryptionController {
                 }
         }
         else if(type.equals("rsa")){
-            encryptedText = encryptionService.encryptRSA(encryptionTemplate);
+            try {
+                encryptedText = encryptionService.encryptRSA(encryptionTemplate.getMessage().getBytes(),
+                        encryptionTemplate.getKey());
+            }
+            catch (Exception e){
+                return new ResponseEntity<>("Operation cannot be used right now", HttpStatus.INTERNAL_SERVER_ERROR);
+            }
         }
         else return new ResponseEntity<>("Type should be RC5 or RSA", HttpStatus.BAD_REQUEST);
 
@@ -53,7 +59,7 @@ public class EncryptionController {
     }
 
     @PostMapping(path = "/decrypt/{type}")
-    public ResponseEntity<?> decrypt(@PathVariable String type, @RequestBody EncryptionTemplate decryptionTemplate){
+    public ResponseEntity<String> decrypt(@PathVariable String type, @RequestBody EncryptionTemplate decryptionTemplate){
         if(decryptionTemplate.getKey() == null || decryptionTemplate.getMessage() == null){
             return new ResponseEntity<>("Message and key values cannot be null", HttpStatus.BAD_REQUEST);
         }
@@ -101,7 +107,13 @@ public class EncryptionController {
             }
         }
         else if(type.equals("rsa")){
-            throw new IllegalArgumentException("RSA currently unsupported");
+            try {
+                encryptedText = encryptionService.encryptRSA(data,
+                        encryptionTemplate.getKey());
+            }
+            catch (Exception e){
+                return new ResponseEntity<>("Operation cannot be used right now", HttpStatus.INTERNAL_SERVER_ERROR);
+            }
         }
         else return new ResponseEntity<>("Type should be RC5 or RSA", HttpStatus.BAD_REQUEST);
         return new ResponseEntity<>(encryptedText, HttpStatus.OK);

@@ -43,11 +43,10 @@ public class EncryptionServiceImpl implements EncryptionService{
     }
 
     @Override
-    public String encryptRSA(EncryptionTemplate encryptionTemplate) {
-        return null;
+    public String encryptRSA(byte[] input, String publicKeyHex) throws Exception {
+        byte[] publicKey = hexStringToBytes(publicKeyHex);
+        return rsa.encryptBlocks(input, publicKey);
     }
-
-    //test
 
     @Override
     public String decryptRC5(byte[] input, String key, int iv) {
@@ -55,5 +54,10 @@ public class EncryptionServiceImpl implements EncryptionService{
         byte[] keyBytes = bytesToHex(md5Hash.computeMD5(key.getBytes())).getBytes();
         byte[] ivBytes = rc5CBCPad.intToByteArray(iv);
         return rc5CBCPad.decryptBlocks(inputBytes, keyBytes, ivBytes);
+    }
+
+    @Override
+    public String decryptRSA(byte[] input, String privateKeyHex) {
+        return null;
     }
 }
