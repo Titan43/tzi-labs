@@ -3,10 +3,7 @@ package com.tzi.lab.config;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.tzi_lib.MD5Hash;
-import org.tzi_lib.PseudoRandom;
-import org.tzi_lib.RC5CBCPad;
-import org.tzi_lib.RSA;
+import org.tzi_lib.*;
 
 @Configuration
 @AllArgsConstructor
@@ -29,5 +26,10 @@ public class UtilConfig {
     @Bean
     public RSA rsa(){
         return new RSA();
+    }
+
+    @Bean
+    public DSA dsa(){
+        return new DSA();
     }
 }

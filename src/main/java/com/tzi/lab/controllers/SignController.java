@@ -6,10 +6,8 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @AllArgsConstructor
@@ -24,13 +22,23 @@ public class SignController {
             return new ResponseEntity<>("Keys cannot be generated right now", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    @PostMapping(path = "/sign-message")
-    public ResponseEntity<?> sign(EncryptionTemplate encryptionTemplate){
+    @PostMapping(path = "/sign")
+    public ResponseEntity<?> sign(@RequestBody EncryptionTemplate encryptionTemplate){
+        return null;
+    }
+    @PostMapping(path = "/file-sign")
+    public ResponseEntity<?> sign(@RequestPart("file") MultipartFile file,
+                                  @RequestPart("key") EncryptionTemplate encryptionTemplate){
         return null;
     }
 
     @PostMapping(path = "/verify")
-    public ResponseEntity<?> verify(){
+    public ResponseEntity<?> verify(@RequestBody EncryptionTemplate encryptionTemplate){
+        return null;
+    }
+    @PostMapping(path = "/file-verify")
+    public ResponseEntity<?> verify(@RequestPart("file") MultipartFile file,
+                                    @RequestPart("key") EncryptionTemplate encryptionTemplate){
         return null;
     }
 }
