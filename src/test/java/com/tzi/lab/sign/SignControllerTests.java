@@ -22,7 +22,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest
-public class SignControllerTests {
+class SignControllerTests {
 
     @Mock
     private SignService signService;

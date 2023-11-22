@@ -15,7 +15,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest
-public class GeneratorControllerTests {
+class GeneratorControllerTests {
 
     @Mock
     private GeneratorService generatorService;
@@ -25,27 +25,22 @@ public class GeneratorControllerTests {
 
     @Test
     void generatePseudorandom() {
-        // Mock the behavior of GeneratorService
         when(generatorService.generateSequence(any(), any(), any(), any(), any()))
                 .thenReturn(new ResponseEntity<>(HttpStatus.OK));
 
-        // Call the controller method
         GeneratorInputTemplate inputTemplate = new GeneratorInputTemplate("1", "2", "3", "4");
         ResponseEntity<?> responseEntity = generatorController.generatePseudorandom(inputTemplate, "10");
 
-        // Verify the result
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
     }
 
     @Test
     void findPseudorandomPeriod() {
-        // Mock the behavior of GeneratorService
         when(generatorService.findPeriod(any(), any(), any(), any()))
                 .thenReturn(new ResponseEntity<>("pseudorandomPeriod", HttpStatus.OK));
         GeneratorInputTemplate inputTemplate = new GeneratorInputTemplate("1", "2", "3", "4");
         ResponseEntity<?> responseEntity = generatorController.findPseudorandomPeriod(inputTemplate);
 
-        // Verify the result
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         assertEquals("pseudorandomPeriod", responseEntity.getBody());
     }
